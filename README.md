@@ -1,278 +1,164 @@
-# 🤖 Shmulik - Samuel Neaman Institute RAG Chatbot
+# 🤖 Shmulik - The LLM Chatbot
 
-Shmulik is an intelligent RAG (Retrieval-Augmented Generation) chatbot designed for the Samuel Neaman Institute for National Policy Research. It specializes in providing information about digital health literacy research using advanced AI techniques.
+> **Multilingual RAG Chatbot for Samuel Neaman Institute**  
+> Advanced AI assistant with Hebrew/English support and proper RTL formatting
 
-## 🌟 Features
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://python.org)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red.svg)](https://streamlit.io)
+[![LangChain](https://img.shields.io/badge/LangChain-0.2+-green.svg)](https://langchain.com)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-- **📚 PDF Document Processing**: Automatically processes and chunks PDF documents using LangChain
-- **🔍 Vector Search**: Uses ChromaDB and sentence transformers for semantic document retrieval
-- **🧠 LangGraph RAG System**: Advanced retrieval-augmented generation using LangGraph workflows
-- **💬 Interactive Interfaces**: Both command-line and web-based (Streamlit) interfaces
-- **🔧 Configurable**: Easily configurable through environment variables and settings
-- **🏥 Domain-Specific**: Specialized for digital health literacy and policy research
+## ✨ Features
 
-## 🛠️ Architecture
+### 🌍 **Multilingual Excellence**
+- **Hebrew & English** support with proper RTL formatting
+- **Dynamic language detection** with automatic text alignment
+- **Cross-language retrieval** - English queries find Hebrew sources and vice versa
 
-The system consists of several key components:
+### 🧠 **Advanced AI Architecture**
+- **Superior Embeddings**: `intfloat/multilingual-e5-base` for best-in-class multilingual understanding
+- **Enhanced PDF Processing**: PyMuPDF with text cleaning and validation
+- **Smart Chunking**: RecursiveCharacterTextSplitter with 1000/200 overlap
+- **LangGraph RAG**: Sophisticated retrieval and generation workflow
 
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   PDF Document  │───▶│  Document        │───▶│  Vector Store   │
-│   Processing    │    │  Chunking        │    │  (ChromaDB)     │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                                         │
-┌─────────────────┐    ┌──────────────────┐             │
-│   User Query    │───▶│  LangGraph       │◄────────────┘
-└─────────────────┘    │  RAG System      │
-                       └──────────────────┘
-                                │
-                       ┌──────────────────┐
-                       │  LLM Response    │
-                       │  Generation      │
-                       └──────────────────┘
-```
+### 🎨 **Professional UI/UX**
+- **Custom Shmulik Branding**: Face avatar in header, half-body in chat
+- **Auto-Initialization**: Ready to use immediately - no setup required
+- **Responsive Design**: Modern Streamlit interface with custom CSS
+- **Hebrew RTL Support**: JavaScript-powered language detection and formatting
 
-### Components:
-
-1. **Document Processing (`src/shmulik/document_processing/`)**: PDF loading and text chunking
-2. **Vector Store (`src/shmulik/vectorstore/`)**: ChromaDB integration with embeddings
-3. **RAG System (`src/shmulik/rag_system/`)**: LangGraph-based retrieval and generation
-4. **Interface (`src/shmulik/interface/`)**: Streamlit web interface
-5. **Configuration (`config/`)**: Environment and application settings
+### 🔧 **Enterprise Features**
+- **Quality Validation**: PDF extraction metrics and chunk validation
+- **Error Handling**: Graceful fallbacks and comprehensive logging
+- **Configuration Management**: Environment-based settings with Pydantic
+- **Modular Architecture**: Clean separation of concerns
 
 ## 🚀 Quick Start
 
-### Prerequisites
-
-- Python 3.11+
-- Conda (recommended)
-- API access to https://litellm.sph-prod.ethz.ch/
-
-### 1. Environment Setup
-
+### 1. **Clone & Setup**
 ```bash
-# Create and activate conda environment
-conda create -n shmulik-rag python=3.11 -y
+git clone https://github.com/gavrielhan/shmulik-the-llm-chatbot.git
+cd shmulik-the-llm-chatbot
+chmod +x setup.sh
+./setup.sh
+```
+
+### 2. **Configure Environment**
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Edit .env and add your API key
+nano .env
+```
+
+### 3. **Launch Shmulik**
+```bash
+# Web interface (recommended)
+python main.py --mode web
+
+# Or CLI interface
+python main.py --mode cli
+```
+
+### 4. **Start Chatting**
+Open http://localhost:8501 and ask Shmulik anything!
+
+**English**: *"What are the main findings of this research?"*  
+**Hebrew**: *"מה הממצאים העיקריים של המחקר?"*
+
+## 🏗️ Architecture
+
+```
+shmulik/
+├── 📁 src/shmulik/
+│   ├── 📁 document_processing/    # PDF extraction & cleaning
+│   ├── 📁 vectorstore/           # ChromaDB vector storage
+│   ├── 📁 rag_system/            # LangGraph RAG workflow
+│   └── 📁 interface/             # Streamlit web UI
+├── 📁 config/                    # Configuration management
+├── 📁 assets/                    # Shmulik avatars
+└── 📄 main.py                    # Application entry point
+```
+
+## ⚙️ Configuration
+
+### **Environment Variables** (`.env`)
+```bash
+# LLM Configuration
+API_KEY=your_api_key_here
+OPENAI_API_BASE=your_api_base_url_here
+LLM_MODEL=openai/gpt-4.1-mini
+
+# Embedding Model
+EMBEDDING_MODEL=intfloat/multilingual-e5-base
+
+# PDF Processing
+PDF_PATH=./Report_Digital-Health-Literacy-among-Students_v1.pdf
+CHUNK_SIZE=1000
+CHUNK_OVERLAP=200
+```
+
+### **Customization** (`config/config.py`)
+- LLM model and API settings
+- Vector store parameters  
+- PDF processing options
+- UI preferences and styling
+
+## 📊 Performance
+
+- **PDF Processing**: 31 pages → 71 chunks in ~2 seconds
+- **Vector Store**: 8,525 words indexed with validation
+- **Response Time**: ~2-3 seconds per query
+- **Memory Usage**: ~500MB with full model loaded
+
+## 🛠️ Development
+
+### **Requirements**
+- Python 3.11+
+- Conda environment
+- 4GB+ RAM recommended
+- API key for LLM service
+
+### **Key Dependencies**
+- `langchain` & `langgraph` - RAG framework
+- `sentence-transformers` - Multilingual embeddings
+- `chromadb` - Vector storage
+- `streamlit` - Web interface
+- `pymupdf` - Enhanced PDF processing
+
+### **Installation**
+```bash
+# Create conda environment
+conda create -n shmulik-rag python=3.11
 conda activate shmulik-rag
 
 # Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Configuration
+## 🎯 Use Cases
 
-Create a `.env` file in the project root:
+- **Research Assistant**: Query academic papers and reports
+- **Multilingual Support**: Hebrew and English content
+- **Policy Analysis**: Samuel Neaman Institute research
+- **Educational Tool**: Digital health literacy insights
 
-```bash
-# LLM Configuration
-OPENAI_API_KEY=your_api_key_here
-OPENAI_API_BASE=https://litellm.sph-prod.ethz.ch/v1
-LLM_MODEL=openai/gpt-4.1-mini
+## 📝 License
 
-# Vector Store Configuration  
-VECTOR_STORE_PATH=./data/vectorstore
-CHUNK_SIZE=1000
-CHUNK_OVERLAP=200
-
-# Application Configuration
-APP_NAME=Shmulik RAG Chatbot
-LOG_LEVEL=INFO
-MAX_TOKENS=2048
-TEMPERATURE=0.7
-
-# Streamlit Configuration
-STREAMLIT_SERVER_PORT=8501
-STREAMLIT_SERVER_ADDRESS=localhost
-```
-
-### 3. Run the System
-
-#### Option A: Interactive Command-Line Interface
-
-```bash
-# Initialize and run interactive mode
-python main.py --mode interactive
-
-# Force recreate vector store if needed
-python main.py --mode interactive --recreate-vectorstore
-```
-
-#### Option B: Web Interface (Streamlit)
-
-```bash
-# Launch Streamlit web app
-python main.py --mode web
-
-# Or directly with streamlit
-streamlit run src/shmulik/interface/streamlit_app.py
-```
-
-#### Option C: Setup Only
-
-```bash
-# Just setup the system without running
-python main.py --setup-only
-```
-
-## 📖 Usage
-
-### Interactive Mode
-
-```bash
-🚀 Initializing Shmulik RAG Chatbot System...
-✅ System initialization complete!
-Type 'quit', 'exit', or 'bye' to end the conversation
-Type 'stats' to see system statistics
-============================================================
-
-🤔 You: What are the key findings about digital health literacy?
-
-🤖 Shmulik: Based on the research report, the key findings about digital health literacy include...
-
-📚 Referenced 3 document(s)
-```
-
-### Web Interface
-
-1. Open your browser to `http://localhost:8501`
-2. Click "🚀 Initialize System" in the sidebar
-3. Start chatting with Shmulik!
-
-## 🔧 Configuration Options
-
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `OPENAI_API_KEY` | API key for LLM access | Required |
-| `OPENAI_API_BASE` | Base URL for API | `https://litellm.sph-prod.ethz.ch/v1` |
-| `LLM_MODEL` | Model name to use | `openai/gpt-4.1-mini` |
-| `VECTOR_STORE_PATH` | Path to store vectors | `./data/vectorstore` |
-| `CHUNK_SIZE` | Document chunk size | `1000` |
-| `CHUNK_OVERLAP` | Overlap between chunks | `200` |
-| `MAX_TOKENS` | Max response tokens | `2048` |
-| `TEMPERATURE` | Response randomness | `0.7` |
-
-### Embedding Model
-
-The system uses `sentence-transformers/all-MiniLM-L6-v2` by default for creating embeddings. You can change this in the configuration.
-
-## 📁 Project Structure
-
-```
-shmulik/
-├── main.py                          # Main entry point
-├── requirements.txt                 # Python dependencies
-├── README.md                       # This file
-├── Report_Digital-Health-Literacy-among-Students_v1.pdf  # Source document
-├── config/
-│   ├── __init__.py
-│   └── config.py                   # Configuration settings
-├── src/
-│   └── shmulik/
-│       ├── __init__.py
-│       ├── document_processing/    # PDF processing
-│       │   ├── __init__.py
-│       │   └── pdf_processor.py
-│       ├── vectorstore/           # Vector storage
-│       │   ├── __init__.py
-│       │   └── chroma_store.py
-│       ├── rag_system/            # RAG implementation
-│       │   ├── __init__.py
-│       │   └── langgraph_rag.py
-│       └── interface/             # User interfaces
-│           ├── __init__.py
-│           └── streamlit_app.py
-├── data/
-│   └── vectorstore/               # Vector database storage
-└── logs/                          # Application logs
-```
-
-## 🔬 Technical Details
-
-### Document Processing
-
-- Uses LangChain's `PyPDFLoader` for PDF processing
-- Implements `RecursiveCharacterTextSplitter` for intelligent text chunking
-- Preserves document metadata including page numbers and source information
-
-### Vector Storage
-
-- ChromaDB for persistent vector storage
-- Sentence Transformers for embedding generation
-- Configurable similarity search with metadata filtering
-
-### RAG System
-
-- LangGraph for workflow orchestration
-- Two-node workflow: retrieval → generation
-- Custom prompts optimized for the Samuel Neaman Institute domain
-- Error handling and conversation history management
-
-### LLM Integration
-
-- Supports custom API endpoints (configured for litellm.sph-prod.ethz.ch)
-- Compatible with OpenAI API format
-- Configurable model parameters (temperature, max_tokens, etc.)
-
-## 🛠️ Development
-
-### Adding New Features
-
-1. **New Document Types**: Extend `pdf_processor.py` or create new processors
-2. **Custom Retrievers**: Implement new retrieval strategies in the RAG system
-3. **Interface Enhancements**: Modify the Streamlit app or add new interfaces
-4. **Advanced Workflows**: Extend the LangGraph workflow with additional nodes
-
-### Testing
-
-```bash
-# Run tests (when available)
-pytest tests/
-
-# Check code formatting
-black src/ config/
-isort src/ config/
-```
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **API Key Issues**
-   - Ensure your API key is correctly set in the `.env` file
-   - Verify access to the litellm endpoint
-
-2. **Vector Store Issues**
-   - Delete the `data/vectorstore` directory to recreate
-   - Use `--recreate-vectorstore` flag when running
-
-3. **PDF Processing Issues**
-   - Ensure the PDF file exists in the project root
-   - Check file permissions
-
-4. **Memory Issues**
-   - Reduce `CHUNK_SIZE` for large documents
-   - Lower the number of retrieved documents (`k` parameter)
-
-### Logs
-
-Check the application logs for detailed error information:
-- Interactive mode: Logs printed to console
-- Streamlit mode: Check the Streamlit console output
-
-## 📄 License
-
-This project is developed for the Samuel Neaman Institute for National Policy Research.
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 🤝 Contributing
 
-For contributions or issues, please contact the development team.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
 ## 📞 Support
 
-For technical support or questions about the system, please refer to the documentation or contact the development team.
+For questions or issues, please open a GitHub issue or contact the development team.
 
 ---
 
-**Shmulik** - Your intelligent assistant for digital health literacy research! 🤖📚
+**Built with ❤️ for the Samuel Neaman Institute for National Policy Research**
