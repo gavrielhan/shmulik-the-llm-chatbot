@@ -43,11 +43,34 @@ class ChromaVectorStore:
         # Ensure directory exists
         os.makedirs(self.persist_directory, exist_ok=True)
         
-        # Initialize embeddings
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name=embedding_model,
-            model_kwargs={'device': 'cpu'}
-        )
+        # Initialize embeddings with proper handling for meta tensors
+        try:
+            self.embeddings = HuggingFaceEmbeddings(
+                model_name=embedding_model,
+                model_kwargs={
+                    'device': 'cpu',
+                    'trust_remote_code': True,
+                    'use_auth_token': False
+                },
+                encode_kwargs={
+                    'normalize_embeddings': True,
+                    'batch_size': 32
+                }
+            )
+        except NotImplementedError as e:
+            if "meta tensor" in str(e).lower():
+                logger.warning(f"Meta tensor error with {embedding_model}, trying alternative initialization...")
+                # Alternative initialization for meta tensor issue
+                self.embeddings = HuggingFaceEmbeddings(
+                    model_name=embedding_model,
+                    model_kwargs={
+                        'device': 'cpu',
+                        'trust_remote_code': True,
+                        'use_auth_token': False
+                    }
+                )
+            else:
+                raise e
         
         # Initialize ChromaDB client
         self.chroma_client = chromadb.PersistentClient(
