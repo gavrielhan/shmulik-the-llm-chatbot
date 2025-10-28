@@ -2,6 +2,7 @@
 Streamlit Interface for Shmulik RAG Chatbot
 """
 import streamlit as st
+import streamlit.components.v1 as components
 import os
 import sys
 from typing import List, Dict, Any
@@ -290,6 +291,8 @@ class ShmulkStreamlitApp:
             st.session_state.documents_loaded = False
         if 'system_initialized' not in st.session_state:
             st.session_state.system_initialized = False
+        if 'last_processed_message_id' not in st.session_state:
+            st.session_state.last_processed_message_id = None
         
         # Auto-initialize system on first run
         if not st.session_state.system_initialized:
@@ -405,6 +408,13 @@ class ShmulkStreamlitApp:
             st.session_state.rag_system = rag_system
             st.session_state.system_initialized = True
             st.session_state.documents_loaded = True
+
+            if not st.session_state.conversation_history:
+                welcome_message = (
+                    "Shalom! I'm Shmulik from the Samuel Neaman Institute. "
+                    "Ask me anything about the Digital Health Literacy research report."
+                )
+                st.session_state.conversation_history.append(AIMessage(content=welcome_message))
             
             
         except Exception as e:
@@ -419,138 +429,6 @@ class ShmulkStreamlitApp:
         st.session_state.documents_loaded = False
         st.session_state.conversation_history = []
         self.initialize_rag_system()
-    
-    def render_chat_interface(self):
-        """Render the main chat interface"""
-        # Custom title with Shmulik face avatar
-        avatar_path = os.path.join(project_root, "assets", "shmulik.png")
-        if os.path.exists(avatar_path):
-            col1, col2 = st.columns([1, 10])
-            with col1:
-                st.image(avatar_path, width=80)
-            with col2:
-                st.title("Shmulik - Your Guide to My Website")
-        else:
-            st.title("🤖 Shmulik - Your Guide to My Website")
-        st.markdown("*Ask me anything about the Digital Health Literacy research report!*")
-        
-        if not st.session_state.system_initialized:
-            st.warning("⚠️ Please initialize the system using the sidebar controls.")
-            st.info("👈 Click 'Initialize System' in the sidebar to get started.")
-            return
-        
-        # Display conversation history
-        self.display_conversation_history()
-        
-        # Chat input
-        user_input = st.chat_input("Ask Shmulik a question about digital health literacy...")
-        
-        if user_input:
-            self.process_user_input(user_input)
-    
-    def display_conversation_history(self):
-        """Display the conversation history"""
-        # Path to custom avatar for chat responses
-        avatar_path = os.path.join(project_root, "assets", "half body shmulik.png")
-        
-        for message in st.session_state.conversation_history:
-            if isinstance(message, HumanMessage):
-                with st.chat_message("user"):
-                    st.write(message.content)
-            elif isinstance(message, AIMessage):
-                # Use custom avatar if it exists, otherwise fallback to emoji
-                if os.path.exists(avatar_path):
-                    with st.chat_message("assistant", avatar=avatar_path):
-                        st.write(message.content)
-                else:
-                    with st.chat_message("assistant"):
-                        st.write(message.content)
-    
-    def process_user_input(self, user_input: str):
-        """Process user input and generate response"""
-        try:
-            # Add user message to history
-            user_message = HumanMessage(content=user_input)
-            st.session_state.conversation_history.append(user_message)
-            
-            # Display user message
-            with st.chat_message("user"):
-                st.write(user_input)
-            
-            # Generate response with half-body Shmulik avatar
-            avatar_path = os.path.join(project_root, "assets", "half body shmulik.png")
-            
-            # Use custom avatar if it exists, otherwise fallback to default
-            if os.path.exists(avatar_path):
-                with st.chat_message("assistant", avatar=avatar_path):
-                    with st.spinner("Shmulik is thinking..."):
-                        # Query the RAG system
-                        result = st.session_state.rag_system.query(
-                            user_query=user_input,
-                            conversation_history=st.session_state.conversation_history[:-1]  # Exclude current message
-                        )
-                        
-                        if result["success"]:
-                            response = result["response"]
-                            st.write(response)
-                            
-                            # Show retrieved documents in expander
-                            if result["retrieved_docs"]:
-                                with st.expander(f"📚 Referenced Documents ({len(result['retrieved_docs'])})"):
-                                    for i, doc in enumerate(result["retrieved_docs"]):
-                                        st.markdown(f"**Document {i+1}** (Page {doc.metadata.get('page', 'Unknown')})")
-                                        st.text(doc.page_content[:300] + "..." if len(doc.page_content) > 300 else doc.page_content)
-                                        st.markdown("---")
-                            
-                            # Add AI message to history
-                            ai_message = AIMessage(content=response)
-                            st.session_state.conversation_history.append(ai_message)
-                            
-                        else:
-                            error_msg = result.get("response", "Sorry, I encountered an error.")
-                            st.error(error_msg)
-                            
-                            # Add error message to history
-                            ai_message = AIMessage(content=error_msg)
-                            st.session_state.conversation_history.append(ai_message)
-            else:
-                with st.chat_message("assistant"):
-                    with st.spinner("Shmulik is thinking..."):
-                        # Query the RAG system
-                        result = st.session_state.rag_system.query(
-                            user_query=user_input,
-                            conversation_history=st.session_state.conversation_history[:-1]  # Exclude current message
-                        )
-                        
-                        if result["success"]:
-                            response = result["response"]
-                            st.write(response)
-                            
-                            # Show retrieved documents in expander
-                            if result["retrieved_docs"]:
-                                with st.expander(f"📚 Referenced Documents ({len(result['retrieved_docs'])})"):
-                                    for i, doc in enumerate(result["retrieved_docs"]):
-                                        st.markdown(f"**Document {i+1}** (Page {doc.metadata.get('page', 'Unknown')})")
-                                        st.text(doc.page_content[:300] + "..." if len(doc.page_content) > 300 else doc.page_content)
-                                        st.markdown("---")
-                            
-                            # Add AI message to history
-                            ai_message = AIMessage(content=response)
-                            st.session_state.conversation_history.append(ai_message)
-                            
-                        else:
-                            error_msg = result.get("response", "Sorry, I encountered an error.")
-                            st.error(error_msg)
-                            
-                            # Add error message to history
-                            ai_message = AIMessage(content=error_msg)
-                            st.session_state.conversation_history.append(ai_message)
-            
-            # Display updates automatically - no rerun needed
-            
-        except Exception as e:
-            st.error(f"❌ Error processing your question: {str(e)}")
-            st.exception(e)
     
     def export_conversation(self):
         """Export conversation history to JSON"""
@@ -576,90 +454,176 @@ class ShmulkStreamlitApp:
             
         except Exception as e:
             st.error(f"Error exporting conversation: {str(e)}")
-    
+
     def render_facebook_chat(self):
-        """Render Facebook-style chat interface"""
-        # Auto-initialize system on first run
+        """Render Facebook-style chat interface entirely within the floating widget"""
         if not st.session_state.system_initialized:
             self.auto_initialize_system()
-        
-        # Create the Facebook-style chat container - SIMPLE VERSION
+
+        conversation_data = [
+            {
+                "role": "user" if isinstance(message, HumanMessage) else "assistant",
+                "content": message.content,
+            }
+            for message in st.session_state.conversation_history
+            if isinstance(message, (HumanMessage, AIMessage))
+        ]
+
+        if not conversation_data:
+            conversation_data.append(
+                {
+                    "role": "assistant",
+                    "content": "Shalom! I'm Shmulik. Ask me anything about the Digital Health Literacy research report.",
+                }
+            )
+
         avatar_base64 = self.get_avatar_base64("half body shmulik.png")
-        
-        st.markdown(f"""
+        conversation_json = json.dumps(conversation_data).replace("</", "<\/")
+
+        html_content = f"""
         <div class="facebook-chat-container">
             <div class="chat-header">
                 <img src="data:image/png;base64,{avatar_base64}" alt="Shmulik">
                 <div class="chat-header-info">
                     <h3>Shmulik</h3>
+                    <p>Samuel Neaman Institute AI Assistant</p>
                 </div>
             </div>
-            <div class="chat-messages" id="chat-messages">
-            </div>
+            <div class="chat-messages" id="chat-messages"></div>
             <div class="chat-input">
                 <div class="input-container">
-                    <button class="mic-button" onclick="startVoiceInput()" title="Voice Input">🎤</button>
-                    <input type="text" id="user-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
-                    <button class="send-button" onclick="sendMessage()" title="Send Message">➤</button>
+                    <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off" />
+                    <button class="send-button" id="send-button" title="Send Message">➤</button>
                 </div>
             </div>
         </div>
-        
         <script>
-        function handleKeyPress(event) {{
-            if (event.key === 'Enter') {{
-                sendMessage();
-            }}
-        }}
-        
-        function sendMessage() {{
-            const input = document.getElementById('user-input');
-            const message = input.value.trim();
-            if (message) {{
-                // Add user message to chat
-                addMessageToChat(message, 'user');
-                input.value = '';
-                
-                // Send to hidden Streamlit input
-                const hiddenInput = document.querySelector('input[key="hidden_chat_input"]');
-                if (hiddenInput) {{
-                    hiddenInput.value = message;
-                    hiddenInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
-                    hiddenInput.dispatchEvent(new Event('change', {{ bubbles: true }}));
-                }}
-            }}
-        }}
-        
-        function addMessageToChat(message, sender) {{
+        const conversation = {conversation_json};
+        const assistantAvatar = "{avatar_base64}";
+
+        function renderConversation() {{
             const chatMessages = document.getElementById('chat-messages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${{sender}}`;
-            
-            const avatar = sender === 'user' ? '👤' : '🤖';
-            const avatarBase64 = '{avatar_base64}';
-            messageDiv.innerHTML = `
-                <img src="${{sender === 'assistant' ? 'data:image/png;base64,' + avatarBase64 : ''}}" class="message-avatar" alt="${{sender}}">
-                <div class="message-content">${{message}}</div>
-            `;
-            
-            chatMessages.appendChild(messageDiv);
+            chatMessages.innerHTML = '';
+
+            conversation.forEach((message) => {{
+                const wrapper = document.createElement('div');
+                wrapper.className = 'message ' + (message.role === 'user' ? 'user' : 'assistant');
+
+                if (message.role === 'assistant' && assistantAvatar) {{
+                    const avatar = document.createElement('img');
+                    avatar.src = 'data:image/png;base64,' + assistantAvatar;
+                    avatar.className = 'message-avatar';
+                    avatar.alt = 'Shmulik';
+                    wrapper.appendChild(avatar);
+                }}
+
+                const content = document.createElement('div');
+                content.className = 'message-content';
+                content.innerText = message.content;
+                wrapper.appendChild(content);
+
+                chatMessages.appendChild(wrapper);
+            }});
+
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }}
-        
-        function startVoiceInput() {{
-            // Voice input functionality would go here
-            alert('Voice input feature coming soon!');
+
+        function sendPayload(payload) {{
+            const streamlitMessage = {{
+                isStreamlitMessage: true,
+                type: 'streamlit:setComponentValue',
+                value: JSON.stringify(payload)
+            }};
+            window.parent.postMessage(streamlitMessage, '*');
         }}
-        
+
+        function handleSubmit() {{
+            const input = document.getElementById('user-input');
+            const message = input.value.trim();
+            if (!message) {{
+                return;
+            }}
+
+            const payload = {{
+                id: Date.now(),
+                content: message
+            }};
+
+            conversation.push({{ role: 'user', content: message }});
+            renderConversation();
+            input.value = '';
+            sendPayload(payload);
+        }}
+
+        document.getElementById('send-button').addEventListener('click', handleSubmit);
+        document.getElementById('user-input').addEventListener('keydown', (event) => {{
+            if (event.key === 'Enter') {{
+                event.preventDefault();
+                handleSubmit();
+            }}
+        }});
+
+        renderConversation();
+        window.parent.postMessage({{ isStreamlitMessage: true, type: 'streamlit:setFrameHeight', height: 520 }}, '*');
+        document.getElementById('user-input').focus();
         </script>
-        """, unsafe_allow_html=True)
-        
-        # Render conversation history separately
-        self.display_conversation_history()
-        
-        # Handle user input - using URL parameters
-        self.process_user_input_simple()
-    
+        """
+
+        component_value = components.html(html_content, height=520, scrolling=False, key="shmulik_facebook_chat")
+
+        if component_value:
+            self.process_component_message(component_value)
+
+    def process_component_message(self, payload: str):
+        """Handle messages sent from the embedded Facebook-style chat component."""
+        try:
+            data = json.loads(payload)
+        except json.JSONDecodeError:
+            return
+
+        message_id = data.get("id")
+        message_content = data.get("content", "").strip()
+
+        if not message_content:
+            return
+
+        if message_id and st.session_state.last_processed_message_id == message_id:
+            return
+
+        st.session_state.last_processed_message_id = message_id
+
+        self.process_user_message(message_content)
+
+    def process_user_message(self, user_input: str):
+        """Process a message received from the chat widget and update the conversation."""
+        user_message = HumanMessage(content=user_input)
+        st.session_state.conversation_history.append(user_message)
+
+        if not st.session_state.rag_system:
+            st.session_state.conversation_history.append(
+                AIMessage(content="I'm still initializing. Please try again in a moment.")
+            )
+            st.experimental_rerun()
+            return
+
+        try:
+            result = st.session_state.rag_system.query(
+                user_query=user_input,
+                conversation_history=st.session_state.conversation_history[:-1]
+            )
+
+            if result["success"]:
+                response = result["response"]
+            else:
+                response = result.get("response", "Sorry, I encountered an error.")
+
+        except Exception as exc:
+            response = f"I'm sorry, but I ran into an issue: {str(exc)}"
+
+        st.session_state.conversation_history.append(AIMessage(content=response))
+
+        st.experimental_rerun()
+
     def get_avatar_base64(self, filename):
         """Get base64 encoded avatar image"""
         try:
@@ -668,76 +632,10 @@ class ShmulkStreamlitApp:
                 import base64
                 with open(avatar_path, "rb") as image_file:
                     return base64.b64encode(image_file.read()).decode()
-        except:
+        except Exception:
             pass
         return ""
-    
-    def display_conversation_history(self):
-        """Display conversation history in Facebook-style chat"""
-        if st.session_state.conversation_history:
-            for message in st.session_state.conversation_history:
-                if isinstance(message, HumanMessage):
-                    st.markdown(f"""
-                    <div class="message user">
-                        <div class="message-content">{message.content}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                elif isinstance(message, AIMessage):
-                    avatar_base64 = self.get_avatar_base64("half body shmulik.png")
-                    st.markdown(f"""
-                    <div class="message assistant">
-                        <img src="data:image/png;base64,{avatar_base64}" class="message-avatar" alt="Shmulik">
-                        <div class="message-content">{message.content}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-    
-    def process_user_input_simple(self):
-        """Process user input using completely hidden input - NO visible inputs"""
-        # Create a completely invisible input that JavaScript can interact with
-        st.markdown("""
-        <style>
-        .stTextInput > div > div > input {
-            display: none !important;
-        }
-        .stTextInput > div > div > label {
-            display: none !important;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-        
-        # Completely hidden input for JavaScript communication
-        user_input = st.text_input("", key="hidden_chat_input", label_visibility="collapsed")
-        
-        if user_input and st.session_state.rag_system:
-            # Add user message to history
-            user_message = HumanMessage(content=user_input)
-            st.session_state.conversation_history.append(user_message)
-            
-            try:
-                # Query the RAG system
-                result = st.session_state.rag_system.query(
-                    user_query=user_input,
-                    conversation_history=st.session_state.conversation_history[:-1]
-                )
-                
-                if result["success"]:
-                    response = result["response"]
-                    
-                    # Add AI message to history
-                    ai_message = AIMessage(content=response)
-                    st.session_state.conversation_history.append(ai_message)
-                    
-                    # Rerun to show the new message
-                    st.rerun()
-                else:
-                    error_msg = result.get("response", "Sorry, I encountered an error.")
-                    ai_message = AIMessage(content=error_msg)
-                    st.session_state.conversation_history.append(ai_message)
-                    st.rerun()
-                    
-            except Exception as e:
-                st.error(f"Error processing your question: {str(e)}")
-    
+
     def run(self):
         """Run the Streamlit application"""
         self.render_facebook_chat()
