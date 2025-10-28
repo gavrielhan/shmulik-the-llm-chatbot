@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shmulik - Samuel Neaman Institute</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Chat Widget -->
+    <div class="chat-container">
+        <div class="chat-header">
+            <img src="assets/half body shmulik.png" alt="Shmulik" class="avatar">
+            <div class="header-info">
+                <h3>Shmulik</h3>
+                <span class="status">Online</span>
+            </div>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message assistant">
+                <img src="assets/half body shmulik.png" alt="Shmulik" class="message-avatar">
+                <div class="message-content">
+                    Shalom! I'm Shmulik from the Samuel Neaman Institute. Ask me anything about the Digital Health Literacy research report.
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off">
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script src="chat.js"></script>
+</body>
+</html>

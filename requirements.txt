@@ -16,9 +16,9 @@ chromadb==0.5.3
 sentence-transformers==5.1.2
 
 # Web interface
-streamlit==1.28.0
-gradio==4.29.0
 watchdog==6.0.0
+fastapi==0.104.1
+uvicorn==0.24.0
 
 # Environment and configuration
 python-dotenv==1.0.1
